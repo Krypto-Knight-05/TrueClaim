@@ -3,6 +3,7 @@
 // ============================================================
 
 import { createWorker } from 'tesseract.js';
+import { getMegaLLMCompletion } from './megallm';
 
 export interface OCRLine {
     text: string;
@@ -138,6 +139,40 @@ export function matchKeywordsToLines(
     }
 
     return matched;
+}
+
+/**
+ * Use MegaLLM to find lines that are semantically related to keywords.
+ * Helpful for recognizing "Shortness of breath" when searching for "Dyspnea".
+ */
+export async function matchKeywordsSemantically(
+    ocrLines: OCRLine[],
+    keywords: string[]
+): Promise<OCRLine[]> {
+    if (keywords.length === 0 || ocrLines.length === 0) return [];
+
+    const sampleLines = ocrLines.map(l => l.text).slice(0, 50).join('\n');
+    const prompt = `
+        Below are lines from a medical document OCR scan.
+        Identify which lines semantically match these medical search terms: ${keywords.join(', ')}.
+
+        Lines:
+        ${sampleLines}
+
+        Return ONLY the exact text of matching lines, one per line. No explanation.
+    `;
+
+    const response = await getMegaLLMCompletion([
+        { role: 'system', content: 'You are a medical document analyst. Return only the exact matching text from the lines provided.' },
+        { role: 'user', content: prompt }
+    ]);
+
+    if (!response) return [];
+
+    const matchedTexts: string[] = response.split('\n').map((t: string) => t.trim().toLowerCase()).filter((t: string) => t.length > 3);
+    return ocrLines.filter(l =>
+        matchedTexts.some((mt: string) => l.text.toLowerCase().includes(mt) || mt.includes(l.text.toLowerCase()))
+    );
 }
 
 /**

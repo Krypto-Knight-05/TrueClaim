@@ -11,12 +11,12 @@ import { runXAIAdvisor } from './xai-advisor';
 /**
  * Run the complete analysis pipeline on a set of claims
  */
-export function analyzeFullClaim(claims: ClaimItem[], cptDb: CPTDatabase): FullAnalysisResult {
+export async function analyzeFullClaim(claims: ClaimItem[], cptDb: CPTDatabase): Promise<FullAnalysisResult> {
     // Run each engine
     const crossModal = runCrossModalAudit(claims, cptDb);
     const timeline = runTimelineDetective(claims, cptDb);
     const ghostUnbundle = runGhostUnbundleHunter(claims, cptDb);
-    const xai = runXAIAdvisor(crossModal, timeline, ghostUnbundle, claims, cptDb);
+    const xai = await runXAIAdvisor(crossModal, timeline, ghostUnbundle, claims, cptDb);
 
     return {
         patient_name: claims[0]?.patient_name || 'Unknown',

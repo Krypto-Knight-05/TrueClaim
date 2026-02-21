@@ -12,6 +12,7 @@ import {
     ClaimItem,
     CPTDatabase,
 } from '../types';
+import { generateMegaLLMBrief } from '@/lib/megallm';
 
 /**
  * Calculate individual risk factors from all feature results
@@ -200,13 +201,13 @@ function generateNarrative(
 /**
  * Run the XAI Advisor on combined analysis results
  */
-export function runXAIAdvisor(
+export async function runXAIAdvisor(
     crossModal: CrossModalResult,
     timeline: TimelineResult,
     ghostUnbundle: GhostUnbundleResult,
     claims: ClaimItem[],
     cptDb: CPTDatabase
-): XAIResult {
+): Promise<XAIResult> {
     const totalBilled = claims.reduce((sum, c) => sum + c.billed_amount_inr, 0);
     const factors = calculateFactors(crossModal, timeline, ghostUnbundle, claims, cptDb);
 
@@ -236,7 +237,17 @@ export function runXAIAdvisor(
         recommendation = 'REVIEW';
     }
 
-    const narrative = generateNarrative(factors, riskScore, claims, totalBilled);
+    const localNarrative = generateNarrative(factors, riskScore, claims, totalBilled);
+
+    // MegaLLM Integration: Attempt to generate a professional brief
+    const llmBrief = await generateMegaLLMBrief({
+        patient_name: claims[0]?.patient_name || 'Unknown',
+        total_billed: totalBilled,
+        total_claims: claims.length,
+        xai: { risk_score: riskScore, factors, financial_summary: { potential_savings: ghostUnbundle.total_potential_savings } }
+    });
+
+    const narrative = llmBrief || localNarrative;
 
     const potentialSavings = ghostUnbundle.total_potential_savings; // Current implementation only tracks ghost/unbundle savings
 

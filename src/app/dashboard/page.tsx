@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { FullAnalysisResult } from '@/lib/types';
 import { getUploadData } from '@/lib/store';
 import { recognizeLines, matchKeywordsToLines, extractKeywords, OCRLine } from '@/lib/ocr';
+import { getMegaLLMCompletion } from '@/lib/megallm';
 
 // ================================================================
 // COMPONENTS
@@ -122,6 +123,92 @@ function FlagDistributionChart({ result }: { result: FullAnalysisResult }) {
                 ))}
             </div>
         </div>
+    );
+}
+
+function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<{ role: 'user' | 'bot', content: string }[]>([
+        { role: 'bot', content: `Audit Officer Initialized. I have analyzed ${result.patient_name}'s claims. How can I assist with your investigation today?` }
+    ]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, [messages]);
+
+    const handleSend = async () => {
+        if (!input.trim() || isLoading) return;
+
+        const userMsg = input.trim();
+        setInput('');
+        setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+        setIsLoading(true);
+
+        const context = `
+            You are an AI Auditor for TrueClaim.
+            Current Audit Status:
+            - Patient: ${result.patient_name}
+            - Total Billed: ₹${result.total_billed}
+            - Claims: ${result.claims.map(c => `${c.cpt_code} (${c.cpt_description})`).join(', ')}
+            - Major Flags: ${result.xai.factors.filter(f => f.direction === 'RISK').map(f => f.name).join(', ')}
+            
+            Task: Assist the Audit Officer with investigative questions about these claims, billing norms, or medical codes.
+        `;
+
+        const response = await getMegaLLMCompletion([
+            { role: 'system', content: context },
+            ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant' as 'user' | 'assistant', content: m.content })),
+            { role: 'user', content: userMsg }
+        ]);
+
+        setMessages(prev => [...prev, { role: 'bot', content: response || "I'm having trouble connecting to the audit server. Please try again." }]);
+        setIsLoading(false);
+    };
+
+    return (
+        <>
+            <button className="toolkit-trigger" onClick={() => setIsOpen(!isOpen)}>
+                {isOpen ? '✕' : '🔍'}
+            </button>
+
+            {isOpen && (
+                <div className="toolkit-window">
+                    <div className="toolkit-header">
+                        <h3>Investigation Toolkit</h3>
+                        <div className="status-dot online" />
+                    </div>
+
+                    <div className="toolkit-messages" ref={scrollRef}>
+                        {messages.map((m, i) => (
+                            <div key={i} className={`chat-msg ${m.role}`}>
+                                {m.content}
+                            </div>
+                        ))}
+                        {isLoading && <div className="chat-msg bot">Analyzing...</div>}
+                    </div>
+
+                    <div className="toolkit-input-area">
+                        <input
+                            className="toolkit-input"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                            placeholder="Ask about codes, prices, or risks..."
+                        />
+                        <button className="toolkit-send" onClick={handleSend} disabled={isLoading}>
+                            ➔
+                        </button>
+                    </div>
+
+                    <div className="mega-branding">
+                        Intelligence Powered by MegaLLM
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
 
@@ -917,7 +1004,10 @@ function XAIPanel({ result }: { result: FullAnalysisResult }) {
             {/* ── Analyst Brief ── */}
             <div className="panel">
                 <div className="panel-header">
-                    <h2>Analyst Brief</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <h2>Analyst Brief</h2>
+                        <span style={{ fontSize: '0.65rem', background: 'var(--bg-secondary)', padding: '0.2rem 0.5rem', borderRadius: '4px', color: 'var(--text-muted)', fontWeight: 700, border: '1px solid var(--border-subtle)' }}>AI POWERED BY MEGALLM</span>
+                    </div>
                     <span className={`verdict-chip ${verdictClass}`} style={{ fontSize: '0.72rem', padding: '0.3rem 0.85rem' }}>{xai.recommendation}</span>
                 </div>
                 <div className="brief-text">
@@ -931,6 +1021,8 @@ function XAIPanel({ result }: { result: FullAnalysisResult }) {
                     })}
                 </div>
             </div>
+            {/* ── Officer Toolkit Chatbot ── */}
+            <OfficerToolkit result={result} />
         </div >
     );
 }

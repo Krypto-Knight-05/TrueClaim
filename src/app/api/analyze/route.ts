@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         }));
 
         const cptDb = cptData as unknown as CPTDatabase;
-        const result = analyzeFullClaim(claims, cptDb);
+        const result = await analyzeFullClaim(claims, cptDb);
 
         return NextResponse.json(result);
     } catch (error) {
