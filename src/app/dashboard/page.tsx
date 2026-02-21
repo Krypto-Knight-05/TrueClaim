@@ -134,6 +134,16 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    const renderMarkdown = (text: string) => {
+        // Simple bold/italic rendering with basic sanitization
+        const html = text
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br />');
+        return <span dangerouslySetInnerHTML={{ __html: html }} />;
+    };
+
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages]);
@@ -154,7 +164,9 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
             - Claims: ${result.claims.map(c => `${c.cpt_code} (${c.cpt_description})`).join(', ')}
             - Major Flags: ${result.xai.factors.filter(f => f.direction === 'RISK').map(f => f.name).join(', ')}
             
-            Task: Assist the Audit Officer with investigative questions about these claims, billing norms, or medical codes.
+            STRICT CONSTRAINT: Keep all responses between 3 to 5 lines maximum. Be professional yet extremely concise.
+            Formatting: You can use bold (**text**) for emphasis.
+            Task: Assist the Audit Officer with investigative questions.
         `;
 
         try {
@@ -202,7 +214,7 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
                     <div className="toolkit-messages" ref={scrollRef}>
                         {messages.map((m, i) => (
                             <div key={i} className={`chat-msg ${m.role}`}>
-                                {m.content}
+                                {renderMarkdown(m.content)}
                             </div>
                         ))}
                         {isLoading && (
