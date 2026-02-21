@@ -1,0 +1,4 @@
+claim_id,patient_name,date,time,department,cpt_code,cpt_description,billed_amount_inr,recorded_clinical_notes,location_lat,location_lng
+CLM-881-A,Vikram Malhotra,2026-02-18,14:00,Emergency Dept,99285,Emergency Dept Visit - Level 5,18000,"Patient presented with twisted right ankle. Vitals completely stable. Pain level 4/10. Mild swelling observed. No fracture suspected. Ice pack applied and patient discharged with painkiller prescription.",28.6139,77.2090
+CLM-881-B,Vikram Malhotra,2026-02-18,15:30,Radiology,70553,MRI Brain with Contrast,15000,"No clinical notes available for this service. Billed alongside emergency visit.",28.6139,77.2090
+CLM-881-C,Vikram Malhotra,2026-02-19,10:00,Orthopaedics,99214,Office Visit - Level 4,5000,"Follow-up visit for ankle. Patient reports mild discomfort. Range of motion normal. Advised rest and elevation for 3 days.",28.6139,77.2090

@@ -1,0 +1,46 @@
+[
+  {
+    "claim_id": "CLM-881-A",
+    "patient_name": "Vikram Malhotra",
+    "date": "2026-02-18",
+    "time": "14:00",
+    "department": "Emergency Dept",
+    "cpt_code": "99285",
+    "cpt_description": "Emergency Dept Visit - Level 5 (High Severity / Life Threatening)",
+    "billed_amount_inr": 18000,
+    "recorded_clinical_notes": "Patient presented with twisted right ankle from football. Conscious, alert. Vitals completely stable: BP 110/75, HR 68 bpm. Pain level 4/10. Sent for X-ray."
+  },
+  {
+    "claim_id": "CLM-881-B",
+    "patient_name": "Vikram Malhotra",
+    "date": "2026-02-18",
+    "time": "14:30",
+    "department": "Radiology",
+    "cpt_code": "73600",
+    "cpt_description": "X-Ray Ankle 2 Views",
+    "billed_amount_inr": 2000,
+    "recorded_clinical_notes": "Radiology: X-Ray Right Ankle (AP and Lateral). Finding: Bone alignment normal. No acute fracture. Soft tissue swelling consistent with sprain."
+  },
+  {
+    "claim_id": "CLM-881-C",
+    "patient_name": "Vikram Malhotra",
+    "date": "2026-02-18",
+    "time": "15:00",
+    "department": "Radiology",
+    "cpt_code": "70553",
+    "cpt_description": "MRI Brain with Contrast",
+    "billed_amount_inr": 15000,
+    "recorded_clinical_notes": "NO RECORD FOUND. Note explicitly states: 'No further imaging required.'"
+  },
+  {
+    "claim_id": "CLM-881-D",
+    "patient_name": "Vikram Malhotra",
+    "date": "2026-02-18",
+    "time": "15:15",
+    "department": "Pharmacy",
+    "cpt_code": "99070",
+    "cpt_description": "Supplies and Materials (Ankle Brace & Meds)",
+    "billed_amount_inr": 1500,
+    "recorded_clinical_notes": "Diagnosis: Grade 1 Ankle Sprain. Advised RICE protocol. Ankle brace fitted. Prescribed Tab. Ibuprofen 400mg BD for 5 days. Discharged."
+  }
+]

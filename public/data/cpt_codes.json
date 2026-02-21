@@ -1,0 +1,185 @@
+{
+    "codes": {
+        "99281": {
+            "description": "ED Visit Level 1 - Self-limited/minor",
+            "severity": 1,
+            "avg_cost_inr": 2000,
+            "category": "E&M"
+        },
+        "99282": {
+            "description": "ED Visit Level 2 - Low to moderate",
+            "severity": 2,
+            "avg_cost_inr": 4000,
+            "category": "E&M"
+        },
+        "99283": {
+            "description": "ED Visit Level 3 - Moderate",
+            "severity": 3,
+            "avg_cost_inr": 7000,
+            "category": "E&M"
+        },
+        "99284": {
+            "description": "ED Visit Level 4 - High severity",
+            "severity": 4,
+            "avg_cost_inr": 12000,
+            "category": "E&M"
+        },
+        "99285": {
+            "description": "ED Visit Level 5 - Life threatening",
+            "severity": 5,
+            "avg_cost_inr": 20000,
+            "category": "E&M"
+        },
+        "99291": {
+            "description": "Critical Care - First 30-74 min",
+            "severity": 5,
+            "avg_cost_inr": 25000,
+            "category": "Critical Care"
+        },
+        "99213": {
+            "description": "Office Visit Level 3 - Low complexity",
+            "severity": 2,
+            "avg_cost_inr": 3000,
+            "category": "E&M"
+        },
+        "99214": {
+            "description": "Office Visit Level 4 - Moderate complexity",
+            "severity": 3,
+            "avg_cost_inr": 5000,
+            "category": "E&M"
+        },
+        "99215": {
+            "description": "Office Visit Level 5 - High complexity",
+            "severity": 5,
+            "avg_cost_inr": 8000,
+            "category": "E&M"
+        },
+        "70553": {
+            "description": "MRI Brain with Contrast",
+            "severity": 4,
+            "avg_cost_inr": 15000,
+            "category": "Radiology"
+        },
+        "73600": {
+            "description": "X-Ray Ankle 2 Views",
+            "severity": 1,
+            "avg_cost_inr": 1500,
+            "category": "Radiology"
+        },
+        "49320": {
+            "description": "Exploratory Laparoscopy",
+            "severity": 4,
+            "avg_cost_inr": 30000,
+            "category": "Surgery"
+        },
+        "44950": {
+            "description": "Appendectomy (Open)",
+            "severity": 4,
+            "avg_cost_inr": 45000,
+            "category": "Surgery"
+        },
+        "44970": {
+            "description": "Laparoscopic Appendectomy",
+            "severity": 4,
+            "avg_cost_inr": 50000,
+            "category": "Surgery"
+        },
+        "12001": {
+            "description": "Simple wound suture ≤2.5cm",
+            "severity": 1,
+            "avg_cost_inr": 3000,
+            "category": "Surgery"
+        },
+        "99070": {
+            "description": "Supplies and Materials",
+            "severity": 1,
+            "avg_cost_inr": 2000,
+            "category": "Supplies"
+        },
+        "97110": {
+            "description": "Therapeutic Exercises",
+            "severity": 1,
+            "avg_cost_inr": 3000,
+            "category": "Physical Therapy"
+        }
+    },
+    "ncci_bundles": [
+        {
+            "primary_code": "44950",
+            "bundled_codes": [
+                "49320",
+                "12001"
+            ],
+            "bundle_description": "Appendectomy includes exploratory laparoscopy and wound closure",
+            "correct_single_code": "44970",
+            "correct_description": "Laparoscopic Appendectomy (single bundled code)"
+        },
+        {
+            "primary_code": "99291",
+            "bundled_codes": [
+                "99285"
+            ],
+            "bundle_description": "Critical care includes ED evaluation",
+            "correct_single_code": "99291",
+            "correct_description": "Critical Care (already covers initial eval)"
+        }
+    ],
+    "severity_keywords": {
+        "1": [
+            "mild",
+            "minor",
+            "self-limited",
+            "stable vitals",
+            "alert",
+            "comfortable",
+            "normal",
+            "sprain",
+            "no acute",
+            "pain level 1",
+            "pain level 2",
+            "pain level 3",
+            "pain level 4"
+        ],
+        "2": [
+            "low grade",
+            "moderate pain",
+            "localized",
+            "controlled",
+            "improving",
+            "follow-up",
+            "outpatient"
+        ],
+        "3": [
+            "moderate",
+            "persistent",
+            "requires monitoring",
+            "observation",
+            "pain level 5",
+            "pain level 6"
+        ],
+        "4": [
+            "severe",
+            "acute",
+            "significant",
+            "requires admission",
+            "surgical",
+            "urgent",
+            "pain level 7",
+            "pain level 8"
+        ],
+        "5": [
+            "critical",
+            "life-threatening",
+            "unstable",
+            "organ failure",
+            "emergent",
+            "code blue",
+            "cardiac arrest",
+            "respiratory failure",
+            "shock",
+            "ventilator",
+            "pain level 9",
+            "pain level 10"
+        ]
+    }
+}

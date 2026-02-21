@@ -1,0 +1,7 @@
+claim_id,patient_name,date,time,department,cpt_code,cpt_description,billed_amount_inr,recorded_clinical_notes,location_lat,location_lng
+CLM-992-A,Priya Sharma,2026-03-10,09:00,Orthopaedics,27447,Total Knee Replacement,120000,"Patient underwent total knee replacement surgery under general anaesthesia. Procedure lasted 2.5 hours. Estimated blood loss 300ml. Post-op vitals stable.",28.7041,77.1025
+CLM-992-B,Priya Sharma,2026-03-10,09:30,Physiotherapy,97110,Therapeutic Exercises,8000,"Post-surgical physiotherapy session. Range of motion exercises performed. Patient tolerated session well.",28.5355,77.2510
+CLM-992-C,Priya Sharma,2026-03-10,10:00,Anaesthesia,00790,Anaesthesia for Knee Surgery,25000,"General anaesthesia administered for knee replacement. Duration: 2.5 hours. Monitoring throughout procedure.",28.7041,77.1025
+CLM-992-D,Priya Sharma,2026-03-10,08:00,Laboratory,85025,Complete Blood Count,2000,"Pre-operative blood work. All values within normal range. Patient cleared for surgery.",28.7041,77.1025
+CLM-992-E,Priya Sharma,2026-03-10,08:30,Laboratory,80053,Comprehensive Metabolic Panel,3000,"Pre-operative metabolic panel. Glucose, electrolytes, kidney and liver function all normal.",28.7041,77.1025
+CLM-992-F,Priya Sharma,2026-03-10,08:30,Laboratory,85610,Prothrombin Time,2000,"Pre-operative coagulation test. PT and INR within normal limits. Patient cleared for surgery.",28.7041,77.1025

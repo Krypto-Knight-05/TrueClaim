@@ -1,0 +1,54 @@
+[
+    {
+        "claim_id": "CLM-992-A",
+        "patient_name": "Priya Sharma",
+        "date": "2026-02-19",
+        "time": "10:00",
+        "department": "Fortis Rohini - OR 4",
+        "cpt_code": "49320",
+        "cpt_description": "Exploratory Laparoscopy",
+        "billed_amount_inr": 25000,
+        "recorded_clinical_notes": "Surgery commenced at 10:00 AM. Abdomen inflated, trocars inserted. Appendix visualized, ligated, and completely removed. Hemostasis achieved.",
+        "location_lat": 28.7041,
+        "location_lng": 77.1025
+    },
+    {
+        "claim_id": "CLM-992-B",
+        "patient_name": "Priya Sharma",
+        "date": "2026-02-19",
+        "time": "10:00",
+        "department": "Fortis Rohini - OR 4",
+        "cpt_code": "44950",
+        "cpt_description": "Appendectomy (Open Procedure)",
+        "billed_amount_inr": 40000,
+        "recorded_clinical_notes": "Appendix visualized, ligated, and completely removed. Hemostasis achieved. Incisions closed with standard sutures. Patient moved to recovery at 12:00 PM.",
+        "location_lat": 28.7041,
+        "location_lng": 77.1025
+    },
+    {
+        "claim_id": "CLM-992-C",
+        "patient_name": "Priya Sharma",
+        "date": "2026-02-19",
+        "time": "10:00",
+        "department": "Fortis Rohini - OR 4",
+        "cpt_code": "12001",
+        "cpt_description": "Simple wound suture",
+        "billed_amount_inr": 10000,
+        "recorded_clinical_notes": "Incisions closed with standard sutures.",
+        "location_lat": 28.7041,
+        "location_lng": 77.1025
+    },
+    {
+        "claim_id": "CLM-992-D",
+        "patient_name": "Priya Sharma",
+        "date": "2026-02-19",
+        "time": "10:30",
+        "department": "Fortis Vasant Kunj - Rehab",
+        "cpt_code": "97110",
+        "cpt_description": "Therapeutic Exercises / Physiotherapy",
+        "billed_amount_inr": 10000,
+        "recorded_clinical_notes": "10:30 AM: Patient is currently under general anesthesia in Operating Room 4. Vitals continuously monitored by anesthesiologist.",
+        "location_lat": 28.5245,
+        "location_lng": 77.1500
+    }
+]
