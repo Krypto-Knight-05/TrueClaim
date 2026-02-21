@@ -5,7 +5,6 @@ import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { FullAnalysisResult } from '@/lib/types';
 import { getUploadData } from '@/lib/store';
 import { recognizeLines, matchKeywordsToLines, extractKeywords, OCRLine } from '@/lib/ocr';
-import { getMegaLLMCompletion } from '@/lib/megallm';
 
 // ================================================================
 // COMPONENTS
@@ -158,27 +157,46 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
             Task: Assist the Audit Officer with investigative questions about these claims, billing norms, or medical codes.
         `;
 
-        const response = await getMegaLLMCompletion([
-            { role: 'system', content: context },
-            ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant' as 'user' | 'assistant', content: m.content })),
-            { role: 'user', content: userMsg }
-        ]);
+        try {
+            const responseBody = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: context },
+                        ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+                        { role: 'user', content: userMsg }
+                    ]
+                })
+            });
 
-        setMessages(prev => [...prev, { role: 'bot', content: response || "I'm having trouble connecting to the audit server. Please try again." }]);
+            const data = await responseBody.json();
+            setMessages(prev => [...prev, { role: 'bot', content: data.response || 'No response received. The AI service may be temporarily unavailable.' }]);
+        } catch {
+            setMessages(prev => [...prev, { role: 'bot', content: 'Network error — unable to reach the analysis server. Please check your connection.' }]);
+        }
         setIsLoading(false);
     };
 
     return (
         <>
-            <button className="toolkit-trigger" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? '✕' : '🔍'}
+            <button className={`toolkit-trigger${isOpen ? ' open' : ''}`} onClick={() => setIsOpen(!isOpen)} aria-label="Open Investigation Toolkit">
+                {isOpen ? '✕' : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                )}
             </button>
 
             {isOpen && (
                 <div className="toolkit-window">
                     <div className="toolkit-header">
-                        <h3>Investigation Toolkit</h3>
-                        <div className="status-dot online" />
+                        <div>
+                            <h3>Investigation Toolkit</h3>
+                            <div className="header-sub">TrueClaim AI Analyst — Live</div>
+                        </div>
+                        <button className="close-btn" onClick={() => setIsOpen(false)}>✕</button>
                     </div>
 
                     <div className="toolkit-messages" ref={scrollRef}>
@@ -187,7 +205,13 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
                                 {m.content}
                             </div>
                         ))}
-                        {isLoading && <div className="chat-msg bot">Analyzing...</div>}
+                        {isLoading && (
+                            <div className="chat-msg bot typing">
+                                <span className="dot" />
+                                <span className="dot" />
+                                <span className="dot" />
+                            </div>
+                        )}
                     </div>
 
                     <div className="toolkit-input-area">
@@ -196,15 +220,15 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Ask about codes, prices, or risks..."
+                            placeholder="Ask about codes, pricing, bundling..."
                         />
                         <button className="toolkit-send" onClick={handleSend} disabled={isLoading}>
-                            ➔
+                            ➤
                         </button>
                     </div>
 
                     <div className="mega-branding">
-                        Intelligence Powered by MegaLLM
+                        Intelligence by MegaLLM
                     </div>
                 </div>
             )}
@@ -1021,8 +1045,7 @@ function XAIPanel({ result }: { result: FullAnalysisResult }) {
                     })}
                 </div>
             </div>
-            {/* ── Officer Toolkit Chatbot ── */}
-            <OfficerToolkit result={result} />
+            {/* ── Officer Toolkit Chatbot — removed from here, now at DashboardContent root ── */}
         </div >
     );
 }
@@ -1200,6 +1223,9 @@ function DashboardContent() {
                     No automated enforcement or legal decisions are made. Final determination rests with the authorized claims officer.
                 </span>
             </div>
+
+            {/* ── Officer Toolkit — at root for proper fixed positioning ── */}
+            <OfficerToolkit result={result} />
         </div>
     );
 }

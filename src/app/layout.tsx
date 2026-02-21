@@ -16,7 +16,7 @@ export default function RootLayout({
       <body>
         <nav className="navbar">
           <a href="/" className="navbar-brand">
-            <div className="navbar-logo">TC</div>
+            <img src="/logo.png" alt="TrueClaim Logo" style={{ height: '32px', marginRight: '0.1rem' }} />
             <div className="navbar-title">True<span>Claim</span></div>
           </a>
           {/* Removed demo links */}

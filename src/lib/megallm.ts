@@ -1,10 +1,10 @@
-/**
- * MegaLLM Utility for ClaimGuard AI
- * Handles communication with the MegaLLM API Gateway.
- */
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const API_KEY = process.env.MEGALLM_API_KEY;
-const API_URL = process.env.NEXT_PUBLIC_MEGALLM_API_URL || 'https://api.megallm.io/v1';
+/**
+ * AI Utility for TrueClaim
+ * Powered by Google Gemini.
+ * Handles communication with the Generative AI SDK securely on the server.
+ */
 
 export interface ChatMessage {
     role: 'system' | 'user' | 'assistant';
@@ -12,37 +12,56 @@ export interface ChatMessage {
 }
 
 /**
- * Basic completion helper for MegaLLM
+ * Basic completion helper using Gemini
+ * Maintains the 'MegaLLM' naming convention to avoid breaking existing imports.
  */
-export async function getMegaLLMCompletion(messages: ChatMessage[], model: string = 'gpt-4o') {
-    if (!API_KEY) {
-        console.warn('[MegaLLM] API key missing. Falling back to local mock logic.');
+export async function getMegaLLMCompletion(messages: ChatMessage[], model: string = 'gemini-1.5-flash') {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (typeof window !== 'undefined') {
+        throw new Error('[Gemini] Security Violation: getMegaLLMCompletion called from client-side code.');
+    }
+
+    if (!apiKey) {
+        console.error('[Gemini] API key missing in process.env.GEMINI_API_KEY');
+        console.log('[Gemini] Current environment keys:', Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
         return null;
     }
 
     try {
-        const response = await fetch(`${API_URL}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`,
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: messages,
-                temperature: 0.7,
-            }),
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const actualModel = 'gemini-flash-latest';
+
+        const systemInstruction = messages.find(m => m.role === 'system')?.content;
+        const modelInstance = genAI.getGenerativeModel({
+            model: actualModel,
+            systemInstruction: systemInstruction || undefined
         });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(`MegaLLM API error: ${response.status} ${JSON.stringify(errorData)}`);
-        }
+        const chatMessages = messages.filter(m => m.role !== 'system');
+        const history = chatMessages.slice(0, -1).map(m => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.content }],
+        }));
 
-        const data = await response.json();
-        return data.choices[0]?.message?.content || null;
-    } catch (error) {
-        console.error('[MegaLLM] completion error:', error);
+        const lastMessage = chatMessages[chatMessages.length - 1]?.content || '';
+
+        console.log(`[Gemini] Requesting: ${actualModel} | History length: ${history.length} | Prompt: ${lastMessage.substring(0, 50)}...`);
+
+        const result = await modelInstance.generateContent({
+            contents: [...history, { role: 'user', parts: [{ text: lastMessage }] }],
+            generationConfig: {
+                temperature: 0.7,
+            },
+        });
+
+        const response = await result.response;
+        const text = response.text();
+
+        console.log('[Gemini] Response received successfully');
+        return text;
+    } catch (error: any) {
+        console.error('[Gemini] Generation error:', error.message || error);
         return null;
     }
 }
