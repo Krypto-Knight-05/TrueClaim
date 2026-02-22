@@ -125,10 +125,14 @@ function FlagDistributionChart({ result }: { result: FullAnalysisResult }) {
     );
 }
 
-function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
+function OfficerToolkit({ result }: { result: FullAnalysisResult | null }) {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<{ role: 'user' | 'bot', content: string }[]>([
-        { role: 'bot', content: `Audit Officer Initialized. I have analyzed ${result.patient_name}'s claims. How can I assist with your investigation today?` }
+        {
+            role: 'bot', content: result
+                ? `Audit Officer Initialized. I have analyzed ${result.patient_name}'s claims. How can I assist with your investigation today?`
+                : "Audit Officer Initialized. I'm waiting for the analysis to complete. You can still ask me general questions about auditing policy."
+        }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -156,7 +160,7 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setIsLoading(true);
 
-        const context = `
+        const context = result ? `
             You are an AI Auditor for TrueClaim.
             Current Audit Status:
             - Patient: ${result.patient_name}
@@ -167,7 +171,13 @@ function OfficerToolkit({ result }: { result: FullAnalysisResult }) {
             STRICT CONSTRAINT: Keep all responses between 3 to 5 lines maximum. Be professional yet extremely concise.
             Formatting: You can use bold (**text**) for emphasis.
             Task: Assist the Audit Officer with investigative questions.
+        ` : `
+            You are an AI Auditor for TrueClaim.
+            The analysis is currently in progress. 
+            Be helpful but remind the user that full patient details will be available in a moment.
         `;
+
+        console.log('[OfficerToolkit] Requesting chat with messages:', messages.length + 2);
 
         try {
             const responseBody = await fetch('/api/chat', {
@@ -1072,6 +1082,38 @@ function XAIPanel({ result }: { result: FullAnalysisResult }) {
 
 
 // ================================================================
+// DOCUMENT MODAL
+// ================================================================
+
+function DocumentModal({
+    isOpen,
+    onClose,
+    title,
+    children
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+}) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-container" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h2>{title}</h2>
+                    <button className="modal-close" onClick={onClose}>✕</button>
+                </div>
+                <div className="modal-content">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ================================================================
 // MAIN DASHBOARD
 // ================================================================
 
@@ -1083,6 +1125,8 @@ function DashboardContent() {
     const [errorMsg, setErrorMsg] = useState('');
     const [activeTab, setActiveTab] = useState(0);
     const [loadingPhase, setLoadingPhase] = useState('Initializing engines...');
+    const [showBills, setShowBills] = useState(false);
+    const [showNotes, setShowNotes] = useState(false);
 
     useEffect(() => {
         const source = searchParams.get('source');
@@ -1153,36 +1197,12 @@ function DashboardContent() {
 
         runAnalysis();
     }, [searchParams]);
-
-    if (loading) {
-        return (
-            <div className="loading-container">
-                <div className="loading-spinner" />
-                <div>
-                    <div className="loading-text">{loadingPhase}</div>
-                    <div className="loading-subtext">4 analysis engines processing claim data...</div>
-                </div>
-            </div>
-        );
-    }
-
-    if (!result) {
-        return (
-            <div className="loading-container">
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-red)' }}>Error</div>
-                <div className="loading-text">Analysis failed</div>
-                {errorMsg && <div className="text-sm text-muted" style={{ maxWidth: '500px', textAlign: 'center', marginTop: '0.5rem' }}>{errorMsg}</div>}
-                <a href="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>← Back to Upload</a>
-            </div>
-        );
-    }
-
-    const tabs = [
+    const tabs = result ? [
         { label: 'Audit Summary', count: null, risk: result.xai.risk_level },
         { label: 'Severity Details', count: result.cross_modal.flagged_count, risk: result.cross_modal.risk_level },
         { label: 'Timeline Details', count: result.timeline.flagged_count, risk: result.timeline.risk_level },
         { label: 'Financial Exceptions', count: result.ghost_unbundle.flagged_count, risk: result.ghost_unbundle.risk_level },
-    ];
+    ] : [];
 
     const badgeClass = (risk: string) => {
         switch (risk) {
@@ -1193,50 +1213,120 @@ function DashboardContent() {
         }
     };
 
+    // Unified layout shell to ensure components like OfficerToolkit persist
     return (
         <div className="dashboard">
-            <div className="dashboard-header animate-in">
-                <div>
-                    <h1>
-                        Audit Report: {result.patient_name}
-                    </h1>
-                    <div className="subtitle">
-                        Analyzed {result.total_claims} line items • Total billed: ₹{result.total_billed.toLocaleString()} • {new Date(result.analysis_timestamp).toLocaleString()}
-                        {noteImages.length > 0 && ` • ${noteImages.length} document(s) attached`}
+            {loading ? (
+                <div className="loading-container">
+                    <div className="loading-spinner" />
+                    <div>
+                        <div className="loading-text">{loadingPhase}</div>
+                        <div className="loading-subtext">4 analysis engines processing claim data...</div>
                     </div>
                 </div>
-                <div className="header-actions">
-                    <a href="/" className="btn btn-outline btn-sm">New Audit</a>
-                    <button className="btn btn-primary btn-sm" onClick={() => window.print()}>Export Report</button>
+            ) : !result ? (
+                <div className="loading-container">
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-red)' }}>Error</div>
+                    <div className="loading-text">Analysis failed</div>
+                    {errorMsg && <div className="text-sm text-muted" style={{ maxWidth: '500px', textAlign: 'center', marginTop: '0.5rem' }}>{errorMsg}</div>}
+                    <a href="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>← Back to Upload</a>
                 </div>
-            </div>
+            ) : (
+                <>
+                    <div className="dashboard-header animate-in">
+                        <div>
+                            <h1>
+                                Audit Report: {result.patient_name}
+                            </h1>
+                            <div className="subtitle">
+                                Analyzed {result.total_claims} line items • Total billed: ₹{result.total_billed.toLocaleString()} • {new Date(result.analysis_timestamp).toLocaleString()}
+                                {noteImages.length > 0 && ` • ${noteImages.length} document(s) attached`}
+                                {' • '}
+                                <button className="subtitle-link" onClick={() => setShowBills(true)}>View Bills</button>
+                                {' • '}
+                                <button className="subtitle-link" onClick={() => setShowNotes(true)}>View Notes</button>
+                            </div>
+                        </div>
+                        <div className="header-actions">
+                            <a href="/" className="btn btn-outline btn-sm">New Audit</a>
+                            <button className="btn btn-primary btn-sm" onClick={() => window.print()}>Export Report</button>
+                        </div>
+                    </div>
 
+                    <div className="tabs animate-in animate-in-delay-2">
+                        {tabs.map((tab, i) => (
+                            <button key={i} className={`tab ${activeTab === i ? 'active' : ''}`} onClick={() => setActiveTab(i)}>
+                                {tab.label}
+                                {tab.count !== null && <span className={`badge ${badgeClass(tab.risk)}`}>{tab.count}</span>}
+                            </button>
+                        ))}
+                    </div>
 
+                    <div className="animate-in animate-in-delay-3">
+                        {activeTab === 0 && <XAIPanel result={result} />}
+                        {activeTab === 1 && <CrossModalPanel result={result} noteImages={noteImages} />}
+                        {activeTab === 2 && <TimelinePanel result={result} noteImages={noteImages} />}
+                        {activeTab === 3 && <GhostUnbundlePanel result={result} noteImages={noteImages} />}
+                    </div>
 
-            <div className="tabs animate-in animate-in-delay-2">
-                {tabs.map((tab, i) => (
-                    <button key={i} className={`tab ${activeTab === i ? 'active' : ''}`} onClick={() => setActiveTab(i)}>
-                        {tab.label}
-                        {tab.count !== null && <span className={`badge ${badgeClass(tab.risk)}`}>{tab.count}</span>}
-                    </button>
-                ))}
-            </div>
+                    <div className="alert-box info" style={{ marginTop: '2rem' }}>
+                        <span>
+                            <strong>Advisory Notice:</strong> This system operates strictly as an analytical tool. All flagged items are recommendations for human review.
+                            No automated enforcement or legal decisions are made. Final determination rests with the authorized claims officer.
+                        </span>
+                    </div>
 
-            <div className="animate-in animate-in-delay-3">
-                {activeTab === 0 && <XAIPanel result={result} />}
-                {activeTab === 1 && <CrossModalPanel result={result} noteImages={noteImages} />}
-                {activeTab === 2 && <TimelinePanel result={result} noteImages={noteImages} />}
-                {activeTab === 3 && <GhostUnbundlePanel result={result} noteImages={noteImages} />}
-            </div>
+                    {/* Document Viewers */}
+                    <DocumentModal
+                        isOpen={showBills}
+                        onClose={() => setShowBills(false)}
+                        title="Billing Data Export"
+                    >
+                        <div className="viewer-table-container">
+                            <table className="viewer-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date/Time</th>
+                                        <th>CPT Code</th>
+                                        <th>Description</th>
+                                        <th>Department</th>
+                                        <th>Billed Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {result.claims.map((claim, idx) => (
+                                        <tr key={idx}>
+                                            <td>{claim.date} {claim.time}</td>
+                                            <td><strong>{claim.cpt_code}</strong></td>
+                                            <td>{claim.cpt_description}</td>
+                                            <td>{claim.department}</td>
+                                            <td>₹{claim.billed_amount_inr.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </DocumentModal>
 
-            <div className="alert-box info" style={{ marginTop: '2rem' }}>
-                <span>
-                    <strong>Advisory Notice:</strong> This system operates strictly as an analytical tool. All flagged items are recommendations for human review.
-                    No automated enforcement or legal decisions are made. Final determination rests with the authorized claims officer.
-                </span>
-            </div>
+                    <DocumentModal
+                        isOpen={showNotes}
+                        onClose={() => setShowNotes(false)}
+                        title="Clinical Notes & Evidence Documents"
+                    >
+                        {noteImages.length > 0 && (
+                            <div className="notes-gallery">
+                                {noteImages.map((img, idx) => (
+                                    <div key={idx} className="note-card">
+                                        <img src={img.url} alt={img.name} />
+                                        <div className="note-card-name">{img.name}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </DocumentModal>
+                </>
+            )}
 
-            {/* ── Officer Toolkit — at root for proper fixed positioning ── */}
             <OfficerToolkit result={result} />
         </div>
     );

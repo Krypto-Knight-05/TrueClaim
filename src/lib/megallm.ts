@@ -15,7 +15,7 @@ export interface ChatMessage {
  * Basic completion helper using Gemini
  * Maintains the 'MegaLLM' naming convention to avoid breaking existing imports.
  */
-export async function getMegaLLMCompletion(messages: ChatMessage[], model: string = 'gemini-1.5-flash') {
+export async function getMegaLLMCompletion(messages: ChatMessage[], preferredModel: string = 'gemini-2.0-flash') {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (typeof window !== 'undefined') {
@@ -23,14 +23,13 @@ export async function getMegaLLMCompletion(messages: ChatMessage[], model: strin
     }
 
     if (!apiKey) {
-        console.error('[Gemini] API key missing in process.env.GEMINI_API_KEY');
-        console.log('[Gemini] Current environment keys:', Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
+        console.error('[Gemini] Missing GEMINI_API_KEY environment variable.');
         return null;
     }
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const actualModel = 'gemini-flash-latest';
+        const actualModel = preferredModel === 'gemini-1.5-flash' ? 'gemini-1.5-flash' : 'gemini-2.0-flash';
 
         const systemInstruction = messages.find(m => m.role === 'system')?.content;
         const modelInstance = genAI.getGenerativeModel({
@@ -46,7 +45,7 @@ export async function getMegaLLMCompletion(messages: ChatMessage[], model: strin
 
         const lastMessage = chatMessages[chatMessages.length - 1]?.content || '';
 
-        console.log(`[Gemini] Requesting: ${actualModel} | History length: ${history.length} | Prompt: ${lastMessage.substring(0, 50)}...`);
+        console.log(`[Gemini] Requesting: ${actualModel} | History length: ${history.length}`);
 
         const result = await modelInstance.generateContent({
             contents: [...history, { role: 'user', parts: [{ text: lastMessage }] }],
@@ -58,10 +57,20 @@ export async function getMegaLLMCompletion(messages: ChatMessage[], model: strin
         const response = await result.response;
         const text = response.text();
 
-        console.log('[Gemini] Response received successfully');
+        if (!text) throw new Error('Empty response from Gemini');
         return text;
     } catch (error: any) {
-        console.error('[Gemini] Generation error:', error.message || error);
+        const errorMsg = error.toString() || '';
+        const isQuotaError = errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('Quota exceeded');
+
+        if (isQuotaError && preferredModel !== 'gemini-1.5-flash') {
+            console.warn(`[Gemini] Model ${preferredModel} hit quota limits. Falling back to gemini-1.5-flash...`);
+            return getMegaLLMCompletion(messages, 'gemini-1.5-flash');
+        }
+
+        console.error('[Gemini] Critical AI Error:', error);
+
+        // Return null so the calling code (like xai-advisor) can use its local fallback narrative
         return null;
     }
 }
