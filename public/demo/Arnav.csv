@@ -1,0 +1,8 @@
+claim_id,patient_name,hospital_network,admission_date,discharge_date,total_billed_inr,item_id,date,time,location,cpt_code,description,billed_amount
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,1,2026-02-22,10:00 - 10:30,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),99285,Emergency Dept Visit - Level 5,20000
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,2,2026-02-22,10:30 - 10:45,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),73030,X-Ray Shoulder Complete,2500
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,3,2026-02-22,10:30 - 11:30,Elite Rehab South Ext (Lat: 28.5677 Lng: 77.2100),97110,Therapeutic Exercises / Physiotherapy,5000
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,4,2026-02-22,11:30 - 11:45,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),20610,Major Joint Corticosteroid Injection,8000
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,5,2026-02-22,12:00 - 12:30,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),23650,Closed Treatment of Shoulder Dislocation,25000
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,6,2026-02-22,12:00 - 12:30,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),29240,Strapping of Shoulder,3500
+CLM-2026-773,Arnav Bansal,PrimeCare Healthcare,2026-02-22,2026-02-22,65500,7,2026-02-22,12:00 - 12:30,PrimeCare Clinic Rohini (Lat: 28.7495 Lng: 77.1184),99070,Surgical Supplies and Materials,1500
