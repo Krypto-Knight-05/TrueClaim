@@ -9,7 +9,7 @@ This dataset demonstrates the TrueClaim audit engine's ability to detect multi-m
 - **Arnav3.png**: Physiotherapy Session Notes.
 
 ## How to Test:
-1. Open the [TrueClaim Dashboard](https://your-vercel-link.vercel.app/).
+1. Open the [TrueClaim Dashboard](https://true-claim.vercel.app/).
 2. Click **Start Audit** on the landing page.
 3. Upload `Arnav.csv` into the **Billing Data** section.
 4. Upload `Arnav1.png`, `Arnav2.png`, and `Arnav3.png` into the **Clinical Documentation** section.
